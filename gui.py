@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-from Tkinter import *
+from tkinter import *
 
 from project import * 
 from task import * 
@@ -31,7 +31,7 @@ class GUI(Frame):
 		task = self.tasks[whichTask]
 		taskTime = str(task.getTotalTime()) 
 		
-		print 'START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime  
+		print ('START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime)  
 		self.tasks[whichTask].startSession()
 		self.previousTask = whichTask
 		
@@ -39,15 +39,15 @@ class GUI(Frame):
 	
 	def stop(self):
 		self.tasks[self.previousTask].endSession() 
-		print 'STOP  ' + str(self.tasks[self.previousTask].strLatestSession())
+		print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
 		
 		
 	def printAll(self):
 		for t in self.tasks: 
-			print t.getName() + " TOTAL: " + str(t.getTotalTime())
+			print (t.getName() + " TOTAL: " + str(t.getTotalTime()))
 			i = 1 
 			for s in t.getSessions(): 
-				print "\tSESSION " + str(i) + ": " + str(s.getTotalTime())
+				print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
 				#print time.strftime('%H:%M:%S', time.localtime(s.getTotalTime()))
 				i = i + 1
 	
@@ -73,7 +73,7 @@ class GUI(Frame):
 		self.newTask = IntVar()
 		i = 0
 		for t in self.tasks: 
-			print t.getName()
+			print (t.getName())
 			Radiobutton(self, text='Task '+str(i), value=i,  variable=self.newTask, indicatoron=0, command=self.start).pack(anchor=W)
 			i = i+1
 		        #t.getName()
