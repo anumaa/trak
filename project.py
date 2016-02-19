@@ -22,11 +22,35 @@ class Project:
 	#	(it will not appear in the list of active tasks, but will appear on the time reports (marked archived)
 	#	-if an archived taskname is reused, the task's status is set to active again (possibly confusing, needs discussion)
 	#
-	def addTasks(self, taskString):
+	def updateTasks(self, taskString):
 		newTasks = taskString.split('\n')
 
 		for newTaskName in newTasks:
 			self.addTask(newTaskName)
+
+		# task was deleted from list -> archive!
+		#if taskName != '' and
+		for existingTask in self.tasks:
+			if existingTask.isActive() and existingTask.name not in newTasks:
+				existingTask.archive()
+				print('archived: ' + existingTask.name)
+
+
+
+	def getActiveTasks(self):
+		rt = []
+		for t in self.tasks:
+			if t.isActive():
+				rt.append(t)
+		return rt
+
+
+	def getArchivedTasks(self):
+		rt = []
+		for t in self.tasks:
+			if t.isArchived():
+				rt.append(t)
+		return rt
 
 
 	#
@@ -60,6 +84,8 @@ class Project:
 	#
 	def getTask(self, num):
 		return self.tasks[num]
+
+
 
 
 	#
@@ -98,11 +124,10 @@ class Project:
 
 		# same task name as previously active task -> activate!
 		if taskName != '' and t != None:
-			t.status = 'active'
+			t.activate()
 			print('reactivating! '+ taskName)
 
-		# task was deleted from list -> archive!
-		if taskName != '' and
+
 
 
 

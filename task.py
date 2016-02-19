@@ -45,6 +45,12 @@ class Task:
 		if self.status == 'active':
 			return True
 		return False
+
+	def archive(self):
+		self.status = 'archived'
+
+	def activate(self):
+		self.status = 'active'
 		
 		
 	def getName(self): 

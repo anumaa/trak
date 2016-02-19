@@ -38,7 +38,7 @@ class Trak(Frame):
 		self.parent.title("trak v0.1")
 		self.pack(fill=BOTH, expand=False)
 
-		taskNames = self.project.getTaskNames()
+		taskNames = self.project.getActiveTaskNames()
 
 		self.newTask = StringVar()
 		self.taskList = ttk.Combobox(self, textvariable=self.newTask, values=taskNames)
@@ -115,7 +115,7 @@ class Trak(Frame):
 			self.taskListButton.grid(row=2, column=0, columnspan=4)
 			self.taskListText = Text(self, height=10, width=30)
 
-			for taskName in self.project.getTaskNames():  #todo: unsplit?
+			for taskName in self.project.getActiveTaskNames():  #todo: unsplit?
 				self.taskListText.insert(END, taskName+'\n')
 			self.taskListText.grid(row=1, column=0, columnspan=4)
 
@@ -141,14 +141,11 @@ class Trak(Frame):
 		h = 30
 		w = 0
 		maxWidth = self.winfo_width()
-		maxHeight = len(self.project.tasks)*(h+30)
+		maxHeight = len(self.project.getActiveTasks())*(h+30)
 
 		weekday = datetime.datetime.today().weekday()
-		#print("today: " + str(weekday))
-		#timestamp of Monday 00:00?
 		timenow = datetime.datetime.time(datetime.datetime.now())
 		weekstart = datetime.datetime.today()-timedelta(days=weekday)-timedelta(hours=timenow.hour, minutes=timenow.minute, microseconds=timenow.microsecond, seconds=timenow.second)
-
 
 		if not self.visuVisible:
 
@@ -162,13 +159,8 @@ class Trak(Frame):
 
 			allTotal = 0
 			allTotal = self.project.getTimeThisWeek()
-			#for t in self.tasks:
-			#	for s in t.getSessions():
-			#		if s.getStartTime() > weekstart.timestamp():
-			#			allTotal = allTotal + t.getTotalTime()
 
-
-			self.vis.create_text(x0+30, y0+10, text='THIS WEEK')
+			self.vis.create_text(maxWidth/2, y0+10, text='THIS WEEK')
 			y0 = y0 + 30
 			for t in self.project.getActiveTasks(): #self.project.tasks:
 
@@ -181,10 +173,6 @@ class Trak(Frame):
 					if s.getStartTime() > weekstart.timestamp():
 						if(taskTotal != 0):
 							w = (s.getTotalTime()*1.0 / allTotal)*maxWidth
-
-							#print("\ns.tot: " + str(tot))
-							#print("w: " + str(w))
-							#print("alltot: " + str(allTotal))
 							self.vis.create_rectangle(x0, y0, x0+w, y0+h, fill="green")
 							x0 = x0+w
 
@@ -202,7 +190,7 @@ class Trak(Frame):
 	def updateList(self):
 
 		allTasks = self.taskListText.get("1.0",END)
-		self.project.addTasks(allTasks)
+		self.project.updateTasks(allTasks)
 
 		#taskNames = []
 		#for t in self.tasks:
