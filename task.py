@@ -6,13 +6,7 @@ class Task:
 	'one task'
 	
 	name = '' 
-	
-	def __init__(self): 
-		self.name = ''
-		self.sessions = []
-		self.totalTime = 0
-		self.status = 'uninitialized'
-		
+
 
 	def __init__(self, name): 
 		self.name = name

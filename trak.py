@@ -15,10 +15,10 @@ from task import *
 class Trak(Frame):
 
 
-	def __init__(self, parent, tasks):
+	def __init__(self, parent, project):
 		Frame.__init__(self, parent)   
 		self.parent = parent
-		self.tasks = tasks
+		self.project = project
 		self.initUI()
 		self.previousTask = -1
 		self.editListVisible = FALSE
@@ -38,24 +38,26 @@ class Trak(Frame):
 	def start(self):
 
 		print("self.start, current: " + str(self.taskList.current()))
-		whichTask = int(self.taskList.current())
 
-		print(self.tasks[whichTask].getName())
-		print(whichTask)
-		t = self.tasks[whichTask]
 
-		#print "previous: " + str(self.previousTask)
-		if(self.previousTask != -1): 
-			self.stop()
-		#whichTask = self.newTask.get()
-		#print "which: " + str(whichTask)
+		self.project.startTask(self.taskList.current())
+
+		#whichTask = int(self.taskList.current())
+		#self.project.getTask(self.taskList.current())
+
+		#print(self.tasks[whichTask].getName())
+		#print(whichTask)
+		#t = self.tasks[whichTask]
+
+		#if(self.previousTask != -1):
+		#	self.stop()
+
+		#task = self.tasks[whichTask]
+		#taskTime = str(task.getTotalTime())
 		
-		task = self.tasks[whichTask]
-		taskTime = str(task.getTotalTime()) 
-		
-		print ('START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime)  
-		self.tasks[whichTask].startSession()
-		self.previousTask = whichTask
+		#print ('START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime)
+		#self.tasks[whichTask].startSession()
+		#self.previousTask = whichTask
 
 		self.stopButton.config(relief=RAISED)
 		self.startButton.config(relief=SUNKEN)
@@ -63,38 +65,16 @@ class Trak(Frame):
 	
 	def stop(self):
 		print('self.stop()')
-		self.tasks[self.previousTask].endSession()
+		self.project.stopTask()
+
+		#self.tasks[self.previousTask].endSession()
 		self.stopButton.config(relief=SUNKEN)
 		self.startButton.config(relief=RAISED)
-		print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
+		#print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
 		
 		
 	def export(self):
-
-
-		today = datetime.datetime.today().date()
-
-		filename = 'trak-'+str(today)+'.csv'
-		print(filename)
-		exportFile = open(filename, 'w')
-
-
-		exportFile.write('TASK\tHOURS\tMINUTES\tSECONDS\n')
-		for t in self.tasks:
-
-			taskTotal = t.getTotalTime()
-			taskHMS = time.strftime('\t%H\t%M\t%S\n', time.gmtime(taskTotal))
-
-			line = t.name + taskHMS
-			exportFile.write(line)
-			print (t.getName() + " TOTAL: " + str(t.getTotalTime()))
-			i = 1 
-			for s in t.getSessions(): 
-				print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
-				line = "\tSESSION " + str(i) + ": " + str(s.getTotalTime())
-				#print time.strftime('%H:%M:%S', time.localtime(s.getTotalTime()))
-				i = i + 1
-				#exportFile.write(line)
+		self.project.export()
 
 
 	def editList(self):
@@ -103,9 +83,11 @@ class Trak(Frame):
 			self.taskListButton = Button(self, command = self.updateList, text='Update')
 			self.taskListButton.grid(row=2, column=0, columnspan=4)
 			self.taskListText = Text(self, height=10, width=30)
-			for t in self.tasks:
-				self.taskListText.insert(END, t.getName()+'\n')
+
+			for taskName in self.project.getTaskNames(): #for t in self.tasks:
+				self.taskListText.insert(END, taskName+'\n')
 			self.taskListText.grid(row=1, column=0, columnspan=4)
+
 			self.editListVisible = TRUE
 			self.editButton.config(relief=SUNKEN)
 		else:
@@ -117,7 +99,7 @@ class Trak(Frame):
 
 
 	##
-	##	Summarize the current week
+	##	Summarize the current week (rough draft)
 	##
 	def visualize(self):
 
@@ -126,14 +108,13 @@ class Trak(Frame):
 		h = 30
 		w = 0
 		maxWidth = self.winfo_width()
-		maxHeight = len(self.tasks)*(h+30)
+		maxHeight = len(self.project.getTasks())*(h+30)
 
 		weekday = datetime.datetime.today().weekday()
 		#print("today: " + str(weekday))
 		#timestamp of Monday 00:00?
 		timenow = datetime.datetime.time(datetime.datetime.now())
 		weekstart = datetime.datetime.today()-timedelta(days=weekday)-timedelta(hours=timenow.hour, minutes=timenow.minute, microseconds=timenow.microsecond, seconds=timenow.second)
-
 
 
 		if not self.visuVisible:
@@ -147,15 +128,16 @@ class Trak(Frame):
 			self.exportButton.grid(row=3, column = 0, columnspan = 5)
 
 			allTotal = 0
-			for t in self.tasks:
-				for s in t.getSessions():
-					if s.getStartTime() > weekstart.timestamp():
-						allTotal = allTotal + t.getTotalTime()
+			allTotal = self.project.getTimeThisWeek()
+			#for t in self.tasks:
+			#	for s in t.getSessions():
+			#		if s.getStartTime() > weekstart.timestamp():
+			#			allTotal = allTotal + t.getTotalTime()
 
 
 			self.vis.create_text(x0+30, y0+10, text='THIS WEEK')
 			y0 = y0 + 30
-			for t in self.tasks:
+			for t in self.project.tasks:
 
 				taskTotal = t.getTotalTime()
 				taskHMS = time.strftime('%H:%M:%S', time.gmtime(taskTotal))
@@ -188,33 +170,34 @@ class Trak(Frame):
 		print('updated list')
 
 		allTasks = self.taskListText.get("1.0",END)
-		updatedTasks = allTasks.split('\n')
+		self.project.addTasks(allTasks)
 
-		taskNames = []
-		for t in self.tasks:
-			taskNames.append(t.getName())
+		#taskNames = []
+		#for t in self.tasks:
+		#	taskNames.append(t.getName())
 
-		for t in self.tasks:
-			if t.getName() not in updatedTasks:
-				t.setStatus('archived')
+		#for t in self.tasks:
+		#	if t.getName() not in updatedTasks:
+		#		t.setStatus('archived')
 
-		for ut in updatedTasks:
-			if ut not in taskNames and ut != '':
-				print(ut)
-				newTask = Task(ut)
-				self.tasks.append(newTask)
+		#for ut in updatedTasks:
+		#	if ut not in taskNames and ut != '':
+		#		print(ut)
+		#		newTask = Task(ut)
+		#		self.tasks.append(newTask)
 
-		names = (o.name for o in self.tasks)
-		print(self.tasks)
+		#names = (o.name for o in self.tasks)
+		#print(self.tasks)
 		self.updateTaskList()
 
 
 
 	def updateTaskList(self):
-		tnames = []
-		for t in self.tasks:
-			tnames.append(t.getName())
-		self.taskList['values'] = tnames
+
+		#for tn in self.project.getTaskNames():
+		#	tnames.append(tn)
+		self.taskList['values'] = self.project.getTaskNames()
+		#TODO: valinta = ...
 
 
 
@@ -225,16 +208,18 @@ class Trak(Frame):
 		self.pack(fill=BOTH, expand=False)
 		self.var = BooleanVar()
 
-		taskNames = []
-		for t in self.tasks:
-			taskNames.append(t.getName())
+		taskNames = self.project.getTaskNames()
+
+		#for t in self.tasks:
+		#	taskNames.append(t.getName())
 
 		self.newTask = StringVar()
 		self.taskList = ttk.Combobox(self, textvariable=self.newTask, values=taskNames)
 
 		self.taskList.bind('<<ComboboxSelected>>',self.start1)
 
-		if len(self.tasks) > 0:
+		#if len(self.tasks) > 0:
+		if len(self.project.getTasks()) > 0:
 			self.taskList.current(0)
 		self.taskList.grid(row=0,column=0)
 
@@ -255,35 +240,26 @@ class Trak(Frame):
 		self.outputButton.grid(row=0,column=4)
 
 
-def doSomethingOnExit(tasks):
-	print ("atexit" + str(len(tasks)))
-	pickle.dump( tasks, open( "trak.p", "wb" ) )
+def doSomethingOnExit(project):
+	print ("atexit" + str(len(project.getTasks())))
+	pickle.dump( project, open( "data/trak.p", "wb" ) )
 
 
 def main():
 
-	#tasks = []
-	#for i in range(0,5):
-	#	tname = 'task'+str(i)
-	#	t = Task(tname)
-	#	tasks.append(t)
-
-
 	root = Tk()
 
 	if os.path.exists('trak.p'):
-		tasks = pickle.load( open( "trak.p", "rb" ) )
-		app = Trak(root, tasks)
+		project = pickle.load( open( "data/trak.p", "rb" ) )
+		app = Trak(root, project)
 
 	else:
-
-		tasks = []
-
-		app = Trak(root, tasks)
+		project = Project()
+		app = Trak(root, project)
 		app.editList()
 
 
-	atexit.register(doSomethingOnExit, tasks)
+	atexit.register(doSomethingOnExit, project)
 	root.wm_attributes("-topmost", 1)
 	root.mainloop()
 
