@@ -36,6 +36,8 @@ class GUI(Frame):
 	def start(self, event):
 
 		print("current: " + str(self.taskList.current()))
+		self.stopButton.config(relief=RAISED)
+		self.startButton.config(relief=SUNKEN)
 		whichTask = int(self.taskList.current())
 
 		print(self.tasks[whichTask].getName())
@@ -61,7 +63,9 @@ class GUI(Frame):
 		
 	
 	def stop(self):
-		self.tasks[self.previousTask].endSession() 
+		self.tasks[self.previousTask].endSession()
+		self.stopButton.config(relief=SUNKEN)
+		self.startButton.config(relief=RAISED)
 		print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
 		
 		
@@ -78,10 +82,6 @@ class GUI(Frame):
 
 	def editList(self):
 
-
-
-
-
 		if self.editListVisible == FALSE:
 			self.taskListButton = Button(self, command = self.updateList, text='Update')
 			self.taskListButton.grid(row=2, column=0, columnspan=4)
@@ -91,12 +91,14 @@ class GUI(Frame):
 			self.taskListText.grid(row=1, column=0, columnspan=4)
 			self.editListVisible = TRUE
 			print("FALSE")
+			self.editButton.config(relief=SUNKEN)
 		else:
 			self.taskListButton.grid_remove()
 			self.taskListText.grid_remove()
 			self.editListVisible = FALSE
 			self.startButton.grid()
 			print("TRUE")
+			self.editButton.config(relief=RAISED)
 
 	
 	def visualize(self):
@@ -306,13 +308,13 @@ def main():
 	#	tasks.append(t)
 
 
-	tasks = []
-
 	root = Tk()
-	app = GUI(root, tasks)
 
 	if os.path.exists('trak.p'):
 		tasks = pickle.load( open( "trak.p", "rb" ) )
+
+
+		app = GUI(root, tasks)
 		#root.geometry("250x150+300+300")
 		#app.loadTasks(tasks)
 
@@ -323,6 +325,9 @@ def main():
 	#init tasks
 	else:
 
+		tasks = []
+
+		app = GUI(root, tasks)
 		#app.loadTasks(tasks)
 		app.editList()
 
