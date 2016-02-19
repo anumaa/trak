@@ -40,7 +40,11 @@ class Task:
 		#print latestSession
 		
 		self.totalTime = self.totalTime + latestSession.getTotalTime()
-		
+
+	def isActive(self):
+		if self.status == 'active':
+			return True
+		return False
 		
 		
 	def getName(self): 

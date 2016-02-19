@@ -11,10 +11,15 @@ from datetime import date, timedelta
 from project import * 
 from task import * 
 
+DATAPATH = 'data/trak.p'
 
 class Trak(Frame):
 
 
+
+	#
+	#	Constructor
+	#
 	def __init__(self, parent, project):
 		Frame.__init__(self, parent)   
 		self.parent = parent
@@ -25,71 +30,98 @@ class Trak(Frame):
 		self.visuVisible = FALSE
 
 
-	def onExit(self):
-		print('onExit')
-		#pickle
-		self.destroy()
+	#
+	#	Initializes the widgets
+	#
+	def initUI(self):
+
+		self.parent.title("trak v0.1")
+		self.pack(fill=BOTH, expand=False)
+
+		taskNames = self.project.getTaskNames()
+
+		self.newTask = StringVar()
+		self.taskList = ttk.Combobox(self, textvariable=self.newTask, values=taskNames)
+		self.taskList.bind('<<ComboboxSelected>>',self.start1)
+
+		if len(self.project.tasks) > 0:
+			self.taskList.current(0)
+		self.taskList.grid(row=0,column=0)
+
+		self.playImg = PhotoImage(file='images/play.png')
+		self.startButton = Button(self, justify = LEFT, command = self.start, image=self.playImg)
+		self.startButton.grid(row=0,column=1)
+
+		self.pauseImg = PhotoImage(file='images/pause.png')
+		self.stopButton = Button(self, justify = LEFT, command = self.stop, image=self.pauseImg)
+		self.stopButton.grid(row=0,column=2)
+
+		#TODO: respec the interface
+		self.ejectImg = PhotoImage(file='images/eject.png')
+		self.editButton = Button(self, justify = LEFT, command=self.editList, image=self.ejectImg)
+		self.editButton.grid(row=0,column=3)
+
+		self.outputImg = PhotoImage(file='images/menu-lines.png')
+		self.outputButton = Button(self, justify = LEFT, command=self.visualizeWeek, image=self.outputImg)
+		self.outputButton.grid(row=0,column=4)
 
 
+
+	#
+	#	Needed detour by the project list combobox
+	#
 	def start1(self, event):
 		self.start()
 
 
+	#
+	#	Starts a new session of the currently selected task
+	#
 	def start(self):
-
-		print("self.start, current: " + str(self.taskList.current()))
-
-
 		self.project.startTask(self.taskList.current())
-
-		#whichTask = int(self.taskList.current())
-		#self.project.getTask(self.taskList.current())
-
-		#print(self.tasks[whichTask].getName())
-		#print(whichTask)
-		#t = self.tasks[whichTask]
-
-		#if(self.previousTask != -1):
-		#	self.stop()
-
-		#task = self.tasks[whichTask]
-		#taskTime = str(task.getTotalTime())
-		
-		#print ('START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime)
-		#self.tasks[whichTask].startSession()
-		#self.previousTask = whichTask
-
 		self.stopButton.config(relief=RAISED)
 		self.startButton.config(relief=SUNKEN)
 
-	
-	def stop(self):
-		print('self.stop()')
-		self.project.stopTask()
 
-		#self.tasks[self.previousTask].endSession()
+	#
+	#	Stops the currently ongoing session of the ongoing task
+	#
+	def stop(self):
+		self.project.stopTask()
 		self.stopButton.config(relief=SUNKEN)
 		self.startButton.config(relief=RAISED)
-		#print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
-		
-		
+
+
+	#
+	#	Exporting the summary per task for the ongoing week (currently)
+	#	TODO: modifying according to new specs
+	#
 	def export(self):
-		self.project.export()
+		self.project.export('\t')
 
 
+	#
+	#	Editing the list of active tasks
+	#	If a task is erased from this view, its status is set to 'archived',
+	# 	but it's not deleted from long-term storage
+	#
+	#	TODO: specifying user interface for unarchiving tasks (if necessary)
+	#
 	def editList(self):
 
+		#if not visible, show
 		if self.editListVisible == FALSE:
 			self.taskListButton = Button(self, command = self.updateList, text='Update')
 			self.taskListButton.grid(row=2, column=0, columnspan=4)
 			self.taskListText = Text(self, height=10, width=30)
 
-			for taskName in self.project.getTaskNames(): #for t in self.tasks:
+			for taskName in self.project.getTaskNames():  #todo: unsplit?
 				self.taskListText.insert(END, taskName+'\n')
 			self.taskListText.grid(row=1, column=0, columnspan=4)
 
 			self.editListVisible = TRUE
 			self.editButton.config(relief=SUNKEN)
+		#if visible & button was pushed, hide
 		else:
 			self.taskListButton.grid_remove()
 			self.taskListText.grid_remove()
@@ -99,16 +131,17 @@ class Trak(Frame):
 
 
 	##
-	##	Summarize the current week (rough draft)
+	##	Visual summary the current week (rough draft)
+	#	TODO: redefine specifications, better encapsulation ?
 	##
-	def visualize(self):
+	def visualizeWeek(self):
 
 		x0 = 0
 		y0 = 10
 		h = 30
 		w = 0
 		maxWidth = self.winfo_width()
-		maxHeight = len(self.project.getTasks())*(h+30)
+		maxHeight = len(self.project.tasks)*(h+30)
 
 		weekday = datetime.datetime.today().weekday()
 		#print("today: " + str(weekday))
@@ -137,7 +170,7 @@ class Trak(Frame):
 
 			self.vis.create_text(x0+30, y0+10, text='THIS WEEK')
 			y0 = y0 + 30
-			for t in self.project.tasks:
+			for t in self.project.getActiveTasks(): #self.project.tasks:
 
 				taskTotal = t.getTotalTime()
 				taskHMS = time.strftime('%H:%M:%S', time.gmtime(taskTotal))
@@ -167,7 +200,6 @@ class Trak(Frame):
 
 
 	def updateList(self):
-		print('updated list')
 
 		allTasks = self.taskListText.get("1.0",END)
 		self.project.addTasks(allTasks)
@@ -188,69 +220,24 @@ class Trak(Frame):
 
 		#names = (o.name for o in self.tasks)
 		#print(self.tasks)
-		self.updateTaskList()
+
+		self.taskList['values'] = self.project.getActiveTaskNames()
+		print('updated list')
 
 
-
-	def updateTaskList(self):
-
-		#for tn in self.project.getTaskNames():
-		#	tnames.append(tn)
-		self.taskList['values'] = self.project.getTaskNames()
-		#TODO: valinta = ...
-
-
-
-	def initUI(self):
-
-		self.parent.title("trak v0.1")
-
-		self.pack(fill=BOTH, expand=False)
-		self.var = BooleanVar()
-
-		taskNames = self.project.getTaskNames()
-
-		#for t in self.tasks:
-		#	taskNames.append(t.getName())
-
-		self.newTask = StringVar()
-		self.taskList = ttk.Combobox(self, textvariable=self.newTask, values=taskNames)
-
-		self.taskList.bind('<<ComboboxSelected>>',self.start1)
-
-		#if len(self.tasks) > 0:
-		if len(self.project.getTasks()) > 0:
-			self.taskList.current(0)
-		self.taskList.grid(row=0,column=0)
-
-		self.playImg = PhotoImage(file='images/play.png')
-		self.startButton = Button(self, justify = LEFT, command = self.start, image=self.playImg)
-		self.startButton.grid(row=0,column=1)
-
-		self.pauseImg = PhotoImage(file='images/pause.png')
-		self.stopButton = Button(self, justify = LEFT, command = self.stop, image=self.pauseImg)
-		self.stopButton.grid(row=0,column=2)
-
-		self.ejectImg = PhotoImage(file='images/eject.png')
-		self.editButton = Button(self, justify = LEFT, command=self.editList, image=self.ejectImg)
-		self.editButton.grid(row=0,column=3)
-
-		self.outputImg = PhotoImage(file='images/menu-lines.png')
-		self.outputButton = Button(self, justify = LEFT, command=self.visualize, image=self.outputImg)
-		self.outputButton.grid(row=0,column=4)
-
-
-def doSomethingOnExit(project):
-	print ("atexit" + str(len(project.getTasks())))
-	pickle.dump( project, open( "data/trak.p", "wb" ) )
+#
+#	Saves the updated project state before closing the application window
+#
+def handleExit(project):
+	pickle.dump( project, open( DATAPATH, "wb" ) )
 
 
 def main():
 
 	root = Tk()
 
-	if os.path.exists('trak.p'):
-		project = pickle.load( open( "data/trak.p", "rb" ) )
+	if os.path.exists(DATAPATH):
+		project = pickle.load( open( DATAPATH, "rb" ) )
 		app = Trak(root, project)
 
 	else:
@@ -259,7 +246,7 @@ def main():
 		app.editList()
 
 
-	atexit.register(doSomethingOnExit, project)
+	atexit.register(handleExit, project)
 	root.wm_attributes("-topmost", 1)
 	root.mainloop()
 

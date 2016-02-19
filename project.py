@@ -1,7 +1,7 @@
 #!/usr/bin/python
-#import task2
 from task import *
 from datetime import date, timedelta
+
 
 class Project: 
 
@@ -10,27 +10,28 @@ class Project:
 		self.tasks = []
 		self.previousTask = -1
 
-	#def __init__(self, tasks):
-	#	self.tasks = tasks
-	#	self.previousTask = -1
 
 	def initTasks(self, tasks):
 		self.tasks = tasks
 
 
+	#
+	#	Adds tasks from \n -separated string
+	#	-If task doesn't already exist in the current list, it's added (addTask -method checks for existence)
+	#	-If a currently active task is deleted from the visible list, its status is set to 'archived' (TODO)
+	#	(it will not appear in the list of active tasks, but will appear on the time reports (marked archived)
+	#	-if an archived taskname is reused, the task's status is set to active again (possibly confusing, needs discussion)
+	#
 	def addTasks(self, taskString):
 		newTasks = taskString.split('\n')
 
 		for newTaskName in newTasks:
-			if newTaskName != '':
-				newTask = Task(newTaskName)
-				self.tasks.append(newTask)
+			self.addTask(newTaskName)
 
 
-	def getTasks(self): 
-		return self.tasks
-
-
+	#
+	#	Returns a list of task names (strings)
+	#
 	def getTaskNames(self):
 
 		if len(self.tasks) > 0:
@@ -42,15 +43,72 @@ class Project:
 			return ''
 
 
+	def getActiveTaskNames(self):
+		if len(self.tasks) > 0:
+			names = []
+			for t in self.tasks:
+				if t.isActive():
+					names.append(t.name)
+			return names
+		else:
+			return ''
+
+
+	#
+	#	Get task by index
+	#	TODO: verify correct behaviour with nonactive tasks
+	#
 	def getTask(self, num):
 		return self.tasks[num]
 
 
+	#
+	#	Find a task by its unique name (case-sensitive)
+	#
+	def getTaskByName(self, taskName):
+		for t in self.tasks:
+			if t.name == taskName:
+				return t
+		return None
+
+
+	#
+	#	Get currently active tasks
+	#
+	def getActiveTasks(self):
+		at = []
+		for t in self.tasks:
+			if t.isActive():
+				at.append(t)
+		return at
+
+
+	#
+	#	Add new task
+	#	Check for empty name given, and existence of the task in the currently active tasks
+	#
 	def addTask(self, taskName):
-		newTask = Task(taskName)
-		self.tasks.append(newTask)
+
+		t = self.getTaskByName(taskName)
+
+		# genuinely new task
+		if taskName != '' and t == None: #taskName not in self.getTaskNames():
+			newTask = Task(taskName)
+			self.tasks.append(newTask)
+
+		# same task name as previously active task -> activate!
+		if taskName != '' and t != None:
+			t.status = 'active'
+			print('reactivating! '+ taskName)
+
+		# task was deleted from list -> archive!
+		if taskName != '' and
 
 
+
+	#
+	#
+	#
 	def startTask(self, taskNumber):
 		#print "previous: " + str(self.previousTask)
 		if(self.previousTask != -1):
@@ -68,8 +126,6 @@ class Project:
 
 	def getTimeThisWeek(self):
 		weekday = datetime.datetime.today().weekday()
-		#print("today: " + str(weekday))
-		#timestamp of Monday 00:00?
 		timenow = datetime.datetime.time(datetime.datetime.now())
 		weekstart = datetime.datetime.today()-timedelta(days=weekday)-timedelta(hours=timenow.hour, minutes=timenow.minute, microseconds=timenow.microsecond, seconds=timenow.second)
 
@@ -82,26 +138,24 @@ class Project:
 		return totalSec
 
 
-
 	def stopTask(self):
 		print('self.stop()')
 		self.tasks[self.previousTask].endSession()
 		print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
 
 
-	def export(self):
+	def export(self, separator):
 		today = datetime.datetime.today().date()
 
 		filename = 'data/trak-'+str(today)+'.csv'
 		print(filename)
 		exportFile = open(filename, 'w')
 
-
-		exportFile.write('TASK\tHOURS\tMINUTES\tSECONDS\n')
+		exportFile.write('TASK'+separator+'HOURS'+separator+'MINUTES'+separator+'SECONDS\n')
 		for t in self.tasks:
 
 			taskTotal = t.getTotalTime()
-			taskHMS = time.strftime('\t%H\t%M\t%S\n', time.gmtime(taskTotal))
+			taskHMS = time.strftime(separator+'%H'+separator+'%M'+separator+'%S\n', time.gmtime(taskTotal))
 
 			line = t.name + taskHMS
 			exportFile.write(line)
