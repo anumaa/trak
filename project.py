@@ -28,8 +28,6 @@ class Project:
 		for newTaskName in newTasks:
 			self.addTask(newTaskName)
 
-		# task was deleted from list -> archive!
-		#if taskName != '' and
 		for existingTask in self.tasks:
 			if existingTask.isActive() and existingTask.name not in newTasks:
 				existingTask.archive()
@@ -133,26 +131,29 @@ class Project:
 		# same task name as previously active task -> activate!
 		if taskName != '' and t != None:
 			t.activate()
-			print('reactivating! '+ taskName)
 
 
 	"""
 
 	"""
 	def startTask(self, taskName):
-		#print "previous: " + str(self.previousTask)
 		if(self.previousTask != None):
 			self.stopTask()
-		#whichTask = self.newTask.get()
-		#print "which: " + str(whichTask)
 
 		task = self.getTaskByName(taskName)#self.tasks[taskNumber]
 		taskTime = str(task.getTotalTime())
 
-		#print ('START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime)
-		print ('START  ' + str(task.strLatestSession()))
+		#print ('START  ' + str(task.strLatestSession()))
 		task.startSession()
 		self.previousTask = task
+
+
+	"""
+
+	"""
+	def stopTask(self):
+		self.previousTask.endSession()
+		#print ('STOP  ' + str(self.previousTask.strLatestSession()))
 
 
 	"""
@@ -171,14 +172,6 @@ class Project:
 
 		return totalSec
 
-
-	"""
-
-	"""
-	def stopTask(self):
-		print('self.stop()')
-		self.previousTask.endSession()
-		print ('STOP  ' + str(self.previousTask.strLatestSession()))
 
 
 	"""

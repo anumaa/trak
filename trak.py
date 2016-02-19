@@ -10,7 +10,7 @@ from datetime import date, timedelta
 from project import * 
 from task import * 
 
-DATAPATH = 'data/trak.p'
+DATASTORAGE = 'trak.p'
 
 class Trak(Frame):
 
@@ -134,12 +134,8 @@ class Trak(Frame):
 		allTasks = self.taskListText.get("1.0",END)
 		self.project.updateTasks(allTasks)
 		self.taskList['values'] = self.project.getActiveTaskNames()
-		print('updated list')
 		self.taskList.current(len(self.taskList['values'])-1)  #the last one is active
 		self.start()
-		print("Current tasklist: " + self.taskList.get())
-		#TÄÄLLÄ
-
 
 
 	"""Visual summary the current week (rough draft)
@@ -203,15 +199,15 @@ class Trak(Frame):
 
 """
 def handleExit(project):
-	pickle.dump( project, open( DATAPATH, "wb" ) )
+	pickle.dump( project, open( DATASTORAGE, "wb" ) )
 
 
 def main():
 
 	root = Tk()
 
-	if os.path.exists(DATAPATH):
-		project = pickle.load( open( DATAPATH, "rb" ) )
+	if os.path.exists(DATASTORAGE):
+		project = pickle.load( open( DATASTORAGE, "rb" ) )
 		app = Trak(root, project)
 
 	else:
