@@ -3,6 +3,8 @@
 
 from tkinter import *
 from tkinter import ttk
+import pickle
+import atexit
 
 from project import * 
 from task import * 
@@ -17,12 +19,14 @@ class GUI(Frame):
 		self.tasks = tasks
 		self.initUI()
 		self.previousTask = -1
-    
+		self.editListVisible = FALSE
+		#self.wm_protocol("WM_DELETE_WINDOW", self.onExit)
 
-	def foo(self, event):
-		current = self.taskList.current()
-		print(self.tasks[current].getName())
 
+	def onExit(self):
+		print('onExit')
+		#pickle
+		self.destroy()
 
 	def start(self, event):
 
@@ -32,6 +36,7 @@ class GUI(Frame):
 		print(self.tasks[whichTask].getName())
 		print(whichTask)
 		t = self.tasks[whichTask]
+
 
 
 
@@ -68,36 +73,40 @@ class GUI(Frame):
 
 	def editList(self):
 
-		#textWin = Toplevel()
 
-		#textarea with existing items
-		print('')
 
-		self.taskListText = Text(self, height=10, width=30)
-		for t in self.tasks:
-			self.taskListText.insert(END, t.getName()+'\n')
-		self.taskListText.pack(side=BOTTOM)
 
-		taskListButton = Button(self, command = self.updateList, text='Update')
-		taskListButton.pack(side=BOTTOM)
 
-		self.startButton = Button(self, justify = LEFT, command = self.start, image=self.playImg)
-		#self.startButton.place(x=50, y=0)
-
+		if self.editListVisible == FALSE:
+			self.taskListButton = Button(self, command = self.updateList, text='Update')
+			self.taskListButton.grid(row=2, column=0, columnspan=4)
+			self.taskListText = Text(self, height=10, width=30)
+			for t in self.tasks:
+				self.taskListText.insert(END, t.getName()+'\n')
+			self.taskListText.grid(row=1, column=0, columnspan=4)
+			self.editListVisible = TRUE
+			print("FALSE")
+		else:
+			self.taskListButton.grid_remove()
+			self.taskListText.grid_remove()
+			self.editListVisible = FALSE
+			self.startButton.grid()
+			print("TRUE")
 
 	
 	def visualize(self):
 		# create child window
-		visuWin = Toplevel()
+		#visuWin = Toplevel()
 		# display message
-		message = "This is the child window"
-		Label(visuWin, text=message).pack()
+		#message = "This is the child window"
+		#Label(self, text=message).pack()
 		# quit child window and return to root window
 		# the button is optional here, simply use the corner x of the child window
-		Button(visuWin, text='OK', command=visuWin.destroy).pack()
+		#Button(self, text='OK', command=visuWin.destroy).pack()
 
-		vis = Canvas(visuWin, width=400, height=250)
-		vis.pack()
+		vis = Canvas(self, width=400, height=250)
+		#vis.pack()
+		vis.grid(row=2,column=0)
 
 
 
@@ -163,6 +172,8 @@ class GUI(Frame):
 
 
 
+
+
 	def initUI(self):
 
 		self.parent.title("trak v0.1")
@@ -183,7 +194,8 @@ class GUI(Frame):
 		self.taskList.bind('<<ComboboxSelected>>',self.start)
 		#self.taskList.place(x='0', y='0')
 		self.taskList.current(0)
-		self.taskList.pack(side=LEFT)
+		self.taskList.grid(row=0,column=0)
+		#self.taskList.pack(side=LEFT)
 
 		print(self.newTask)
 
@@ -191,26 +203,35 @@ class GUI(Frame):
 		self.playImg = PhotoImage(file='images/play.png')
 		self.startButton = Button(self, justify = LEFT, command = self.start, image=self.playImg)
 		#self.startButton.place(x=50, y=0)
-		self.startButton.pack(side=LEFT)
+		#self.startButton.pack(side=LEFT)
+		self.startButton.grid(row=0,column=1)
 
 		self.pauseImg = PhotoImage(file='images/pause.png')
 		self.stopButton = Button(self, justify = LEFT, command = self.stop, image=self.pauseImg)
 		#self.stopButton.place(x=86, y=0)
-		self.stopButton.pack(side=LEFT)
+		#self.stopButton.pack(side=LEFT)
+		self.stopButton.grid(row=0,column=2)
 
 		self.ejectImg = PhotoImage(file='images/eject.png')
 		self.editButton = Button(self, justify = LEFT, command=self.editList, image=self.ejectImg)
 		#self.editButton.place(x=122, y=0)
-		self.editButton.pack(side=LEFT)
+		#self.editButton.pack(side=LEFT)
+		self.editButton.grid(row=0,column=3)
+
+		self.outputImg = PhotoImage(file='images/menu-lines.png')
+		self.outputButton = Button(self, justify = LEFT, command=self.visualize, image=self.outputImg)
+		#self.editButton.place(x=122, y=0)
+		#self.editButton.pack(side=LEFT)
+		self.outputButton.grid(row=0,column=4)
 
 
 
-		self.visuButton = Button(self, text="VISU", command = self.visualize)
-		self.visuButton.place(x=150, y = 90)
+		#self.visuButton = Button(self, text="VISU", command = self.visualize)
+		#self.visuButton.place(x=150, y = 90)
 		
 		
-		self.printButton = Button(self, text="PRINT", command = self.printAll)
-		self.printButton.place(x=500	, y=300)
+		#self.printButton = Button(self, text="PRINT", command = self.printAll)
+		#self.printButton.place(x=500	, y=300)
 
 		#self.newTask = IntVar()
 		#i = 0
@@ -244,9 +265,23 @@ class GUI(Frame):
 
 
 
+	#def closeEvent(self):
+	#	print ("exit handler")
+	#	self.destroy()
+
+def doSomethingOnExit(tasks):
+	print ("atexit" + str(len(tasks)))
+	pickle.dump( tasks, open( "save.p", "wb" ) )
 
 
 def main():
+
+
+	loadedTasks = pickle.load( open( "save.p", "rb" ) )
+	print('loaded tasks: ')
+	for t in loadedTasks:
+		print(t.getName())
+
 
 	#init tasks 
 	tasks = []
@@ -256,13 +291,17 @@ def main():
 		tasks.append(t)
 
 
+
+
 	root = Tk()
 	#root.geometry("250x150+300+300")
 	app = GUI(root, tasks)
     
 
-		
+	#root.protocol( "WM_DELETE_WINDOW", closeMe )
+	atexit.register(doSomethingOnExit, tasks)
 	root.mainloop()  
+
 
 
 if __name__ == '__main__':
