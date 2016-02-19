@@ -15,13 +15,13 @@ class Project:
 		self.tasks = tasks
 
 
-	#
-	#	Adds tasks from \n -separated string
-	#	-If task doesn't already exist in the current list, it's added (addTask -method checks for existence)
-	#	-If a currently active task is deleted from the visible list, its status is set to 'archived' (TODO)
-	#	(it will not appear in the list of active tasks, but will appear on the time reports (marked archived)
-	#	-if an archived taskname is reused, the task's status is set to active again (possibly confusing, needs discussion)
-	#
+	"""Adds tasks from \n -separated string
+
+		-If task doesn't already exist in the current list, it's added (addTask -method checks for existence)
+		-If a currently active task is deleted from the visible list, its status is set to 'archived' (TODO)
+		(it will not appear in the list of active tasks, but will appear on the time reports (marked archived)
+		-if an archived taskname is reused, the task's status is set to active again (possibly confusing, needs discussion)
+	"""
 	def updateTasks(self, taskString):
 		newTasks = taskString.split('\n')
 
@@ -36,7 +36,9 @@ class Project:
 				print('archived: ' + existingTask.name)
 
 
+	"""
 
+	"""
 	def getActiveTasks(self):
 		rt = []
 		for t in self.tasks:
@@ -45,6 +47,9 @@ class Project:
 		return rt
 
 
+	"""
+
+	"""
 	def getArchivedTasks(self):
 		rt = []
 		for t in self.tasks:
@@ -53,9 +58,9 @@ class Project:
 		return rt
 
 
-	#
-	#	Returns a list of task names (strings)
-	#
+	"""Returns a list of task names (strings)
+
+	"""
 	def getTaskNames(self):
 
 		if len(self.tasks) > 0:
@@ -67,6 +72,9 @@ class Project:
 			return ''
 
 
+	"""
+
+	"""
 	def getActiveTaskNames(self):
 		if len(self.tasks) > 0:
 			names = []
@@ -78,19 +86,19 @@ class Project:
 			return ''
 
 
-	#
-	#	Get task by index
-	#	TODO: verify correct behaviour with nonactive tasks
-	#
+	"""Get task by index
+
+	TODO: verify correct behaviour with nonactive tasks
+	"""
 	def getTask(self, num):
 		return self.tasks[num]
 
 
 
 
-	#
-	#	Find a task by its unique name (case-sensitive)
-	#
+	"""Find a task by its unique name (case-sensitive)
+
+	"""
 	def getTaskByName(self, taskName):
 		for t in self.tasks:
 			if t.name == taskName:
@@ -98,9 +106,9 @@ class Project:
 		return None
 
 
-	#
-	#	Get currently active tasks
-	#
+	"""Get currently active tasks
+
+	"""
 	def getActiveTasks(self):
 		at = []
 		for t in self.tasks:
@@ -109,10 +117,10 @@ class Project:
 		return at
 
 
-	#
-	#	Add new task
-	#	Check for empty name given, and existence of the task in the currently active tasks
-	#
+	"""Add new task
+
+		Check for empty name given, and existence of the task in the currently active tasks
+	"""
 	def addTask(self, taskName):
 
 		t = self.getTaskByName(taskName)
@@ -128,9 +136,9 @@ class Project:
 			print('reactivating! '+ taskName)
 
 
-	#
-	#
-	#
+	"""
+
+	"""
 	def startTask(self, taskName):
 		#print "previous: " + str(self.previousTask)
 		if(self.previousTask != None):
@@ -147,9 +155,9 @@ class Project:
 		self.previousTask = task
 
 
-	#
-	#
-	#
+	"""
+
+	"""
 	def getTimeThisWeek(self):
 		weekday = datetime.datetime.today().weekday()
 		timenow = datetime.datetime.time(datetime.datetime.now())
@@ -164,12 +172,18 @@ class Project:
 		return totalSec
 
 
+	"""
+
+	"""
 	def stopTask(self):
 		print('self.stop()')
 		self.previousTask.endSession()
 		print ('STOP  ' + str(self.previousTask.strLatestSession()))
 
 
+	"""
+
+	"""
 	def export(self, separator):
 		today = datetime.datetime.today().date()
 
@@ -185,27 +199,20 @@ class Project:
 
 			line = t.name + taskHMS
 			exportFile.write(line)
-			print (t.getName() + " TOTAL: " + str(t.getTotalTime()))
+			print (t.name + " TOTAL: " + str(t.getTotalTime()))
 			i = 1
 			for s in t.getSessions():
 				print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
 				line = "\tSESSION " + str(i) + ": " + str(s.getTotalTime())
-				#print time.strftime('%H:%M:%S', time.localtime(s.getTotalTime()))
 				i = i + 1
-				#exportFile.write(line)
-		
+
+
+	"""
+
+	"""
 	def __str__(self):
 		s = ''
 		for t in self.tasks: 
 			s = s + t.name + ': ' + str(t.totalTime) + '\n'
 		return s
 
-
-#p = Project('Testiprojekti 1')
-
-#for i in range(1,5):
-#	t = Task('task ' + str(i))
-#	p.addTask(t)
-	
-#print(p)
-	

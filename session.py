@@ -1,8 +1,9 @@
+#!/usr/bin/python
+
 import datetime
 import time 
 
-class Session: 
-	'one unbroken session, task can contain multiple' 
+class Session:
 	totalTime = 0
 	
 	def __init__(self): 
@@ -25,12 +26,3 @@ class Session:
 		
 	def getTotalTime(self):
 		return self.totalTime
-			
-
-#s = Session()
-##print s.getStartTime()
-#time.sleep(2)
-#s.endSession()
-#print s.getEndTime()
-#print s.getTotalTime()
-	

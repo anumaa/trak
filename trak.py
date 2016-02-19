@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 from tkinter import *
 from tkinter import ttk
 import pickle
@@ -16,10 +15,6 @@ DATAPATH = 'data/trak.p'
 class Trak(Frame):
 
 
-
-	#
-	#	Constructor
-	#
 	def __init__(self, parent, project):
 		Frame.__init__(self, parent)   
 		self.parent = parent
@@ -30,9 +25,6 @@ class Trak(Frame):
 		self.visuVisible = FALSE
 
 
-	#
-	#	Initializes the widgets
-	#
 	def initUI(self):
 
 		self.parent.title("trak v0.1")
@@ -67,16 +59,16 @@ class Trak(Frame):
 
 
 
-	#
-	#	Needed detour by the project list combobox
-	#
+	"""Needed detour by the project list combobox
+
+	"""
 	def start1(self, event):
 		self.start()
 
 
-	#
-	#	Starts a new session of the currently selected task
-	#
+	"""Starts a new session of the currently selected task
+
+	"""
 	def start(self):
 		#self.project.startTask(self.taskList.current())
 		self.project.startTask(self.taskList.get())
@@ -84,36 +76,34 @@ class Trak(Frame):
 		self.startButton.config(relief=SUNKEN)
 
 
-	#
-	#	Stops the currently ongoing session of the ongoing task
-	#
+	"""Stops the currently ongoing session of the ongoing task
+
+	"""
 	def stop(self):
 		self.project.stopTask()
 		self.stopButton.config(relief=SUNKEN)
 		self.startButton.config(relief=RAISED)
 
 
-	#
-	#	Exporting the summary per task for the ongoing week (currently)
-	#	TODO: modifying according to new specs
-	#
+	"""Exporting the summary per task for the ongoing week (currently)
+
+	TODO: modifying according to new specs
+	"""
 	def export(self):
 		self.project.export('\t')
 
 
-	#
-	#	Editing the list of active tasks
-	#	If a task is erased from this view, its status is set to 'archived',
-	# 	but it's not deleted from long-term storage
-	#
-	#	TODO: specifying user interface for unarchiving tasks (if necessary)
-	#
+	"""Editing the list of active tasks
+
+	If a task is erased from this view, its status is set to 'archived',
+	but it's not deleted from long-term storage
+
+	TODO:  user interface for unarchiving tasks?
+	"""
 	def editList(self):
 
 		#if not visible, show
 		if self.editListVisible == FALSE:
-			#self.taskListButton = Button(self, command = self.updateList, text='Update tasks')
-			#self.taskListButton.grid(row=2, column=0, columnspan=4)
 			self.taskListText = Text(self, height=10, width=30)
 
 			for taskName in self.project.getActiveTaskNames():  #todo: unsplit?
@@ -133,12 +123,12 @@ class Trak(Frame):
 
 
 
-	#
-	#	Updates the tasks
-	#	-genuinely new tasks are added
-	#	-reoccurring, archived tasks are reactivated
-	#	-tasks deleted from the on-screen list, which appear on the project tasks, are archived
-	#
+	"""Updates the tasks
+
+	-genuinely new tasks are added
+	-reoccurring, archived tasks are reactivated
+	-tasks deleted from the on-screen list, which appear on the project tasks, are archived
+	"""
 	def updateList(self):
 
 		allTasks = self.taskListText.get("1.0",END)
@@ -152,10 +142,10 @@ class Trak(Frame):
 
 
 
-	##
-	##	Visual summary the current week (rough draft)
-	#	TODO: redefine specifications, better encapsulation ?
-	##
+	"""Visual summary the current week (rough draft)
+
+	TODO: redefine specifications, better encapsulation ?
+	"""
 	def visualizeWeek(self):
 
 		x0 = 0
@@ -209,9 +199,9 @@ class Trak(Frame):
 			self.outputButton.config(relief=RAISED)
 
 
-#
-#	Saves the updated project state before closing the application window
-#
+"""Saves the updated project state before closing the application window
+
+"""
 def handleExit(project):
 	pickle.dump( project, open( DATAPATH, "wb" ) )
 
