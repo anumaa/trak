@@ -6,12 +6,13 @@ from tkinter import ttk
 import pickle
 import atexit
 import os.path
+from datetime import date, timedelta
 
 from project import * 
 from task import * 
 
 
-class GUI(Frame):
+class Trak(Frame):
 
 
 	def __init__(self, parent, tasks):
@@ -22,11 +23,6 @@ class GUI(Frame):
 		self.previousTask = -1
 		self.editListVisible = FALSE
 		self.visuVisible = FALSE
-		#self.wm_protocol("WM_DELETE_WINDOW", self.onExit)
-
-
-	def loadTasks(self, tasks):
-		self.tasks = tasks
 
 
 	def onExit(self):
@@ -73,15 +69,32 @@ class GUI(Frame):
 		print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
 		
 		
-	def printAll(self):
-		for t in self.tasks: 
+	def export(self):
+
+
+		today = datetime.datetime.today().date()
+
+		filename = 'trak-'+str(today)+'.csv'
+		print(filename)
+		exportFile = open(filename, 'w')
+
+
+		exportFile.write('TASK\tHOURS\tMINUTES\tSECONDS\n')
+		for t in self.tasks:
+
+			taskTotal = t.getTotalTime()
+			taskHMS = time.strftime('\t%H\t%M\t%S\n', time.gmtime(taskTotal))
+
+			line = t.name + taskHMS
+			exportFile.write(line)
 			print (t.getName() + " TOTAL: " + str(t.getTotalTime()))
 			i = 1 
 			for s in t.getSessions(): 
 				print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
+				line = "\tSESSION " + str(i) + ": " + str(s.getTotalTime())
 				#print time.strftime('%H:%M:%S', time.localtime(s.getTotalTime()))
 				i = i + 1
-
+				#exportFile.write(line)
 
 
 	def editList(self):
@@ -94,73 +107,81 @@ class GUI(Frame):
 				self.taskListText.insert(END, t.getName()+'\n')
 			self.taskListText.grid(row=1, column=0, columnspan=4)
 			self.editListVisible = TRUE
-			print("FALSE")
 			self.editButton.config(relief=SUNKEN)
 		else:
 			self.taskListButton.grid_remove()
 			self.taskListText.grid_remove()
 			self.editListVisible = FALSE
 			self.startButton.grid()
-			print("TRUE")
 			self.editButton.config(relief=RAISED)
 
-	
+
+	##
+	##	Summarize the current week
+	##
 	def visualize(self):
 
+		x0 = 0
+		y0 = 10
+		h = 30
+		w = 0
 		maxWidth = self.winfo_width()
+		maxHeight = len(self.tasks)*(h+30)
+
+		weekday = datetime.datetime.today().weekday()
+		#print("today: " + str(weekday))
+		#timestamp of Monday 00:00?
+		timenow = datetime.datetime.time(datetime.datetime.now())
+		weekstart = datetime.datetime.today()-timedelta(days=weekday)-timedelta(hours=timenow.hour, minutes=timenow.minute, microseconds=timenow.microsecond, seconds=timenow.second)
+
 
 
 		if not self.visuVisible:
-		# create child window
-		#visuWin = Toplevel()
-		# display message
-		#message = "This is the child window"
-		#Label(self, text=message).pack()
-		# quit child window and return to root window
-		# the button is optional here, simply use the corner x of the child window
-		#Button(self, text='OK', command=visuWin.destroy).pack()
 
 			self.visuVisible = TRUE
-			self.vis = Canvas(self, width=maxWidth, height=400)
-			#vis.pack()
+			self.vis = Canvas(self, width=maxWidth, height=maxHeight)
+			self.vis.grid(row=2,column=0,columnspan=5)
 			self.vis.grid(row=2,column=0,columnspan=5)
 
-
-			x0 = 0
-			y0 = 0
-			h = 30
-			w = 0
+			self.exportButton = Button(self, command = self.export, text='Export')
+			self.exportButton.grid(row=3, column = 0, columnspan = 5)
 
 			allTotal = 0
 			for t in self.tasks:
-				allTotal = allTotal + t.getTotalTime()
+				for s in t.getSessions():
+					if s.getStartTime() > weekstart.timestamp():
+						allTotal = allTotal + t.getTotalTime()
 
+
+			self.vis.create_text(x0+30, y0+10, text='THIS WEEK')
+			y0 = y0 + 30
 			for t in self.tasks:
 
-				tot = t.getTotalTime()
-
+				taskTotal = t.getTotalTime()
+				taskHMS = time.strftime('%H:%M:%S', time.gmtime(taskTotal))
+				taskText = t.name + ': ' + str(taskHMS)
+				self.vis.create_text(maxWidth-len(t.name)*10, y0+15, text=taskText )
 
 				for s in t.getSessions():
+					if s.getStartTime() > weekstart.timestamp():
+						if(taskTotal != 0):
+							w = (s.getTotalTime()*1.0 / allTotal)*maxWidth
 
-					if(tot != 0):
-						w = (s.getTotalTime()*1.0 / allTotal)*150
-
-					print("\ns.tot: " + str(s.getTotalTime()))
-					print("w: " + str(w))
-					print("tot: " + str(tot))
-					self.vis.create_rectangle(x0, y0, x0+w, y0+h, fill="green")
-					x0 = x0+w
+							#print("\ns.tot: " + str(tot))
+							#print("w: " + str(w))
+							#print("alltot: " + str(allTotal))
+							self.vis.create_rectangle(x0, y0, x0+w, y0+h, fill="green")
+							x0 = x0+w
 
 				x0 = 0
 				y0 = y0 + h + 10
+
 			self.outputButton.config(relief=SUNKEN)
 		else:
 			self.visuVisible = FALSE
 			self.vis.grid_remove()
+			self.exportButton.grid_remove()
 			self.outputButton.config(relief=RAISED)
-
-
-
 
 
 	def updateList(self):
@@ -213,11 +234,9 @@ class GUI(Frame):
 
 		self.taskList.bind('<<ComboboxSelected>>',self.start1)
 
-
 		if len(self.tasks) > 0:
 			self.taskList.current(0)
 		self.taskList.grid(row=0,column=0)
-
 
 		self.playImg = PhotoImage(file='images/play.png')
 		self.startButton = Button(self, justify = LEFT, command = self.start, image=self.playImg)
@@ -234,22 +253,6 @@ class GUI(Frame):
 		self.outputImg = PhotoImage(file='images/menu-lines.png')
 		self.outputButton = Button(self, justify = LEFT, command=self.visualize, image=self.outputImg)
 		self.outputButton.grid(row=0,column=4)
-
-
-
-
-
-
-		#self.newTask = IntVar()
-		#i = 0
-		#for t in self.tasks:
-		#	print (t.getName())
-		#	Radiobutton(self, text='Task '+str(i), value=i,  variable=self.newTask, indicatoron=0, command=self.start).pack(anchor=W)
-		#	i = i+1
-		        #t.getName()
-
-		#http://pyinmyeye.blogspot.fi/2012/08/tkinter-combobox-demo.html
-
 
 
 def doSomethingOnExit(tasks):
@@ -270,13 +273,13 @@ def main():
 
 	if os.path.exists('trak.p'):
 		tasks = pickle.load( open( "trak.p", "rb" ) )
-		app = GUI(root, tasks)
+		app = Trak(root, tasks)
 
 	else:
 
 		tasks = []
 
-		app = GUI(root, tasks)
+		app = Trak(root, tasks)
 		app.editList()
 
 
