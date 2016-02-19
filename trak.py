@@ -44,7 +44,7 @@ class Trak(Frame):
 		self.taskList = ttk.Combobox(self, textvariable=self.newTask, values=taskNames)
 		self.taskList.bind('<<ComboboxSelected>>',self.start1)
 
-		if len(self.project.tasks) > 0:
+		if len(self.project.getActiveTasks()) > 0:
 			self.taskList.current(0)
 		self.taskList.grid(row=0,column=0)
 
@@ -78,7 +78,8 @@ class Trak(Frame):
 	#	Starts a new session of the currently selected task
 	#
 	def start(self):
-		self.project.startTask(self.taskList.current())
+		#self.project.startTask(self.taskList.current())
+		self.project.startTask(self.taskList.get())
 		self.stopButton.config(relief=RAISED)
 		self.startButton.config(relief=SUNKEN)
 
@@ -111,8 +112,8 @@ class Trak(Frame):
 
 		#if not visible, show
 		if self.editListVisible == FALSE:
-			self.taskListButton = Button(self, command = self.updateList, text='Update')
-			self.taskListButton.grid(row=2, column=0, columnspan=4)
+			#self.taskListButton = Button(self, command = self.updateList, text='Update tasks')
+			#self.taskListButton.grid(row=2, column=0, columnspan=4)
 			self.taskListText = Text(self, height=10, width=30)
 
 			for taskName in self.project.getActiveTaskNames():  #todo: unsplit?
@@ -123,11 +124,32 @@ class Trak(Frame):
 			self.editButton.config(relief=SUNKEN)
 		#if visible & button was pushed, hide
 		else:
-			self.taskListButton.grid_remove()
+			self.updateList()
+			#self.taskListButton.grid_remove()
 			self.taskListText.grid_remove()
 			self.editListVisible = FALSE
 			self.startButton.grid()
 			self.editButton.config(relief=RAISED)
+
+
+
+	#
+	#	Updates the tasks
+	#	-genuinely new tasks are added
+	#	-reoccurring, archived tasks are reactivated
+	#	-tasks deleted from the on-screen list, which appear on the project tasks, are archived
+	#
+	def updateList(self):
+
+		allTasks = self.taskListText.get("1.0",END)
+		self.project.updateTasks(allTasks)
+		self.taskList['values'] = self.project.getActiveTaskNames()
+		print('updated list')
+		self.taskList.current(len(self.taskList['values'])-1)  #the last one is active
+		self.start()
+		print("Current tasklist: " + self.taskList.get())
+		#TÄÄLLÄ
+
 
 
 	##
@@ -187,32 +209,6 @@ class Trak(Frame):
 			self.outputButton.config(relief=RAISED)
 
 
-	def updateList(self):
-
-		allTasks = self.taskListText.get("1.0",END)
-		self.project.updateTasks(allTasks)
-
-		#taskNames = []
-		#for t in self.tasks:
-		#	taskNames.append(t.getName())
-
-		#for t in self.tasks:
-		#	if t.getName() not in updatedTasks:
-		#		t.setStatus('archived')
-
-		#for ut in updatedTasks:
-		#	if ut not in taskNames and ut != '':
-		#		print(ut)
-		#		newTask = Task(ut)
-		#		self.tasks.append(newTask)
-
-		#names = (o.name for o in self.tasks)
-		#print(self.tasks)
-
-		self.taskList['values'] = self.project.getActiveTaskNames()
-		print('updated list')
-
-
 #
 #	Saves the updated project state before closing the application window
 #
@@ -231,6 +227,8 @@ def main():
 	else:
 		project = Project()
 		app = Trak(root, project)
+
+	if len(project.getActiveTasks()) == 0:
 		app.editList()
 
 

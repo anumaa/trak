@@ -8,7 +8,7 @@ class Project:
 	def __init__(self): 
 		self.name = ''
 		self.tasks = []
-		self.previousTask = -1
+		self.previousTask = None
 
 
 	def initTasks(self, tasks):
@@ -128,27 +128,28 @@ class Project:
 			print('reactivating! '+ taskName)
 
 
-
-
-
 	#
 	#
 	#
-	def startTask(self, taskNumber):
+	def startTask(self, taskName):
 		#print "previous: " + str(self.previousTask)
-		if(self.previousTask != -1):
+		if(self.previousTask != None):
 			self.stopTask()
 		#whichTask = self.newTask.get()
 		#print "which: " + str(whichTask)
 
-		task = self.tasks[taskNumber]
+		task = self.getTaskByName(taskName)#self.tasks[taskNumber]
 		taskTime = str(task.getTotalTime())
 
 		#print ('START ' + str(task.__str__('red')) + "SESSION " + str(len(self.tasks[whichTask].getSessions())+1) + " " + taskTime)
-		self.tasks[taskNumber].startSession()
-		self.previousTask = taskNumber
+		print ('START  ' + str(task.strLatestSession()))
+		task.startSession()
+		self.previousTask = task
 
 
+	#
+	#
+	#
 	def getTimeThisWeek(self):
 		weekday = datetime.datetime.today().weekday()
 		timenow = datetime.datetime.time(datetime.datetime.now())
@@ -165,8 +166,8 @@ class Project:
 
 	def stopTask(self):
 		print('self.stop()')
-		self.tasks[self.previousTask].endSession()
-		print ('STOP  ' + str(self.tasks[self.previousTask].strLatestSession()))
+		self.previousTask.endSession()
+		print ('STOP  ' + str(self.previousTask.strLatestSession()))
 
 
 	def export(self, separator):
