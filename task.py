@@ -11,12 +11,14 @@ class Task:
 		self.name = ''
 		self.sessions = []
 		self.totalTime = 0
+		self.status = 'uninitialized'
 		
 
 	def __init__(self, name): 
 		self.name = name
 		self.sessions = []
 		self.totalTime = 0
+		self.status = 'active'
 		
 
 	def startSession(self): 
@@ -50,7 +52,14 @@ class Task:
 	def getName(self): 
 		return self.name
 		
-	
+
+	def getStatus(self):
+		return self.status
+
+
+	def setStatus(self, newStatus):
+		self.status = newStatus
+
 
 	def getTotalTime(self): 
 		return self.totalTime

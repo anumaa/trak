@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter import ttk
 import pickle
 import atexit
+import os.path
 
 from project import * 
 from task import * 
@@ -21,6 +22,10 @@ class GUI(Frame):
 		self.previousTask = -1
 		self.editListVisible = FALSE
 		#self.wm_protocol("WM_DELETE_WINDOW", self.onExit)
+
+
+	def loadTasks(self, tasks):
+		self.tasks = tasks
 
 
 	def onExit(self):
@@ -155,22 +160,34 @@ class GUI(Frame):
 		allTasks = self.taskListText.get("1.0",END)
 		updatedTasks = allTasks.split('\n')
 
+		taskNames = []
+		for t in self.tasks:
+			taskNames.append(t.getName())
 
 		for t in self.tasks:
 			if t.getName() not in updatedTasks:
 				t.setStatus('archived')
 
 		for ut in updatedTasks:
-			if ut not in self.tasks():
-				print('')
+			if ut not in taskNames and ut != '':
+				print(ut)
+				newTask = Task(ut)
+				self.tasks.append(newTask)
 
 
 
 
-		print(updatedTasks)
+		names = (o.name for o in self.tasks)
+		print(self.tasks)
+		self.updateTaskList()
 
 
 
+	def updateTaskList(self):
+		tnames = []
+		for t in self.tasks:
+			tnames.append(t.getName())
+		self.taskList['values'] = tnames
 
 
 
@@ -190,10 +207,11 @@ class GUI(Frame):
 
 		self.newTask = StringVar()
 		self.taskList = ttk.Combobox(self, textvariable=self.newTask, values=taskNames)
+
 		#self.taskList['values'] = taskNames
 		self.taskList.bind('<<ComboboxSelected>>',self.start)
 		#self.taskList.place(x='0', y='0')
-		self.taskList.current(0)
+		#self.taskList.current(0)
 		self.taskList.grid(row=0,column=0)
 		#self.taskList.pack(side=LEFT)
 
@@ -271,36 +289,51 @@ class GUI(Frame):
 
 def doSomethingOnExit(tasks):
 	print ("atexit" + str(len(tasks)))
-	pickle.dump( tasks, open( "save.p", "wb" ) )
+	pickle.dump( tasks, open( "trak.p", "wb" ) )
+
+
 
 
 def main():
 
 
-	loadedTasks = pickle.load( open( "save.p", "rb" ) )
-	print('loaded tasks: ')
-	for t in loadedTasks:
-		print(t.getName())
 
 
-	#init tasks 
+	#tasks = []
+	#for i in range(0,5):
+	#	tname = 'task'+str(i)
+	#	t = Task(tname)
+	#	tasks.append(t)
+
+
 	tasks = []
-	for i in range(0,5): 
-		tname = 'task'+str(i)
-		t = Task(tname) 
-		tasks.append(t)
-
-
-
 
 	root = Tk()
-	#root.geometry("250x150+300+300")
 	app = GUI(root, tasks)
-    
 
-	#root.protocol( "WM_DELETE_WINDOW", closeMe )
+	if os.path.exists('trak.p'):
+		tasks = pickle.load( open( "trak.p", "rb" ) )
+		#root.geometry("250x150+300+300")
+		#app.loadTasks(tasks)
+
+		#root.protocol( "WM_DELETE_WINDOW", closeMe )
+
+
+
+	#init tasks
+	else:
+
+		#app.loadTasks(tasks)
+		app.editList()
+
+	#print('loaded tasks: ')
+	#for t in loadedTasks:
+	#	print(t.getName())
+
 	atexit.register(doSomethingOnExit, tasks)
-	root.mainloop()  
+	root.mainloop()
+
+
 
 
 
