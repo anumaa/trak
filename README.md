@@ -3,8 +3,8 @@
 Minimalistic tool for task-based time tracking (version 0.1, so minor and major tweaks will probably be happening soon)
 
 Usage: 
->python trak.py  
-(>python3 trak.py) 
+>> python trak.py  
+(>> python3 trak.py) 
 
 Tasks are added by writing one task per line onto a text box. Deleting a task from the list will archive it - it will no longer be presented on the user interface or reporting, but can be reactivated by typing it up again onto the list (use cases and user interface for dealing with the archived tasks will need some further consideration) 
 
