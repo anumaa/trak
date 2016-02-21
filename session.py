@@ -14,12 +14,6 @@ class Session:
 	def __print__(self): 
 		return str(self.startTime)
 		
-	def getStartTime(self):
-		return self.startTime
-	
-	def getEndTime(self):
-		return self.endTime
-		
 	def endSession(self): 
 		self.endTime = int(time.time())
 		self.totalTime = self.endTime-self.startTime

@@ -2,7 +2,12 @@
 from task import *
 from datetime import date, timedelta
 
+"""Project contains the current set of tasks (both active and archived)
 
+Currently the application only contains one project (could be taken 
+as a single client). Future versions will probably enable tracking 
+multiple projects simultaneously (tasks done for several clients) 
+"""
 class Project: 
 
 	def __init__(self): 
@@ -34,7 +39,7 @@ class Project:
 				print('archived: ' + existingTask.name)
 
 
-	"""
+	"""Returns a list of active tasks
 
 	"""
 	def getActiveTasks(self):
@@ -45,7 +50,7 @@ class Project:
 		return rt
 
 
-	"""
+	"""Returns a list of archived tasks 
 
 	"""
 	def getArchivedTasks(self):
@@ -70,7 +75,7 @@ class Project:
 			return ''
 
 
-	"""
+	"""Returns a list of active task names 
 
 	"""
 	def getActiveTaskNames(self):
@@ -116,11 +121,13 @@ class Project:
 
 
 	"""Add new task
-
+ 
 		Check for empty name given, and existence of the task in the currently active tasks
+		Truncates the task name to max. 25 characters 
 	"""
 	def addTask(self, taskName):
 
+		taskName = taskName[0:25]
 		t = self.getTaskByName(taskName)
 
 		# genuinely new task
@@ -133,22 +140,21 @@ class Project:
 			t.activate()
 
 
-	"""
+	"""Starts another session of the currently active task 
 
 	"""
 	def startTask(self, taskName):
 		if(self.previousTask != None):
 			self.stopTask()
 
-		task = self.getTaskByName(taskName)#self.tasks[taskNumber]
+		task = self.getTaskByName(taskName)
 		taskTime = str(task.getTotalTime())
 
-		#print ('START  ' + str(task.strLatestSession()))
 		task.startSession()
 		self.previousTask = task
 
 
-	"""
+	"""Stops the current session of the currently active task 
 
 	"""
 	def stopTask(self):
@@ -156,7 +162,7 @@ class Project:
 		#print ('STOP  ' + str(self.previousTask.strLatestSession()))
 
 
-	"""
+	"""Cumulative time per task over the current week (starting Monday midnight) 
 
 	"""
 	def getTimeThisWeek(self):
@@ -166,22 +172,23 @@ class Project:
 
 		totalSec = 0
 		for t in self.tasks:
-			for s in t.getSessions():
-				if s.getStartTime() > weekstart.timestamp():
+			for s in t.sessions:
+				if s.startTime > weekstart.timestamp():
 					totalSec = totalSec + t.getTotalTime()
 
 		return totalSec
 
 
 
-	"""
-
+	"""Exports the (active) tasks as a comma-separated file (rough draft) 
+	
+	TODO: specify output format according to user needs 
 	"""
 	def export(self, separator):
 		today = datetime.datetime.today().date()
 
-		filename = 'data/trak-'+str(today)+'.csv'
-		print(filename)
+		filename = 'trak-'+str(today)+'.csv'
+		#print(filename)
 		exportFile = open(filename, 'w')
 
 		exportFile.write('TASK'+separator+'HOURS'+separator+'MINUTES'+separator+'SECONDS\n')
@@ -192,17 +199,14 @@ class Project:
 
 			line = t.name + taskHMS
 			exportFile.write(line)
-			print (t.name + " TOTAL: " + str(t.getTotalTime()))
+			#print (t.name + " TOTAL: " + str(t.getTotalTime()))
 			i = 1
-			for s in t.getSessions():
-				print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
+			for s in t.sessions:
+				#print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
 				line = "\tSESSION " + str(i) + ": " + str(s.getTotalTime())
 				i = i + 1
 
 
-	"""
-
-	"""
 	def __str__(self):
 		s = ''
 		for t in self.tasks: 
