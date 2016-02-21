@@ -39,7 +39,7 @@ class Trak(Frame):
 
 		self.newTask = StringVar()
 		#rather a regular option menu 
-		self.taskList = ttk.Combobox(self, textvariable=self.newTask, font=("Helvetica",12), values=taskNames)
+		self.taskList = ttk.Combobox(self, textvariable=self.newTask, font=("Helvetica",12), values=taskNames, background='white')
 		self.taskList.bind('<<ComboboxSelected>>',self.start1)
 
 		if len(self.project.getActiveTasks()) > 0:
@@ -73,9 +73,11 @@ class Trak(Frame):
 	"""
 	def editList(self):
 
+		taskListLabelText = 'Add or remove tasks\n(deleted tasks will be archived)'
 		#if not visible, show
 		if self.editListVisible == FALSE:
-			self.taskListLabel = Label(self, text='Add or remove tasks\n(deleted tasks will be archived)', font='Helvetica, 12')
+			
+			self.taskListLabel = Label(self, text=taskListLabelText, font='Helvetica, 12')
 			self.taskListLabel.grid(row=1, column=0, columnspan=5)
 			
 			self.taskListText = Text(self, height=10, width=25, background='white')
@@ -105,15 +107,18 @@ class Trak(Frame):
 	def updateList(self):
 
 		allTasks = self.taskListText.get("1.0",END)
-		self.project.updateTasks(allTasks)
-		self.taskList['values'] = self.project.getActiveTaskNames()
-		self.taskList.current(len(self.taskList['values'])-1)  #the last one is active
-		self.start()
+		if len(allTasks) > 0:
+			self.project.updateTasks(allTasks)
+			self.taskList['values'] = self.project.getActiveTaskNames()
+			if len(self.taskList['values']) > 0: 
+				self.taskList.current(len(self.taskList['values'])-1)  #the last one is active
+				self.start()
+			
 
 
 	"""Visual summary the current week (rough draft)
 
-	TODO: re-spec according to user needs
+	TODO: re-spec according to user needs, refactor into clearer modules
 	"""
 	def visualize(self):
 
@@ -145,18 +150,21 @@ class Trak(Frame):
 			y0 = y0 + 30
 			for t in self.project.getActiveTasks(): #self.project.tasks:
 
+				
 				taskTotal = t.getTotalTime()
-				taskHMS = time.strftime('%H:%M:%S', time.gmtime(taskTotal))
-				taskText = t.name + ': ' + str(taskHMS)
-				self.vis.create_text(maxWidth/7*4, y0+15, anchor='nw', text=taskText )
 
 				for s in t.sessions:
 					if s.startTime > weekstart.timestamp():
 						if(taskTotal != 0):
 							w = (s.getTotalTime()*1.0 / allTotal)*maxWidth
-							self.vis.create_rectangle(x0, y0, x0+w, y0+h, fill="green")
+							self.vis.create_rectangle( x0, y0, x0+w, y0+h,fill="green")
 							x0 = x0+w
+							
+				taskHMS = time.strftime('%H:%M:%S', time.gmtime(taskTotal))
+				taskText = t.name + ': ' + str(taskHMS)
+				self.vis.create_text(maxWidth/7*4, y0+10, anchor='nw', text=taskText )
 
+				x0 = 10
 				y0 = y0 + h + 10
 
 			self.outputButton.config(relief=SUNKEN, background='lightgrey')
