@@ -12,12 +12,16 @@ The app is set to stay on top of all other windows, and is small enough to fit t
 
 Reporting currently includes a visual overview (and cumulative time) per task for the ongoing week. The same information can also be exported in CSV format for easy importing to spreadsheet programs. (reporting is rudimentary at this stage, it will be improved according to the user wishes and needs during the upcoming weeks) 
 
-Data persistence is currently handlded with Python's pickle serialization, but database or cloud storage might be better for data consistency. Developing a corresponding web application is another possible future endeavour. 
+Data persistence is currently handlded with Python's pickle serialization, but local database or cloud storage might be better for data consistency. Developing a corresponding web application is another possible future endeavour. 
 
 
 TODO: 
--specifying visualization and reporting to meet the user needs
--handling multiple projects ("clients"), each with multiple tasks
--offering UI to visualize and report past tasks / over different time periods 
--user interfaces / use cases for reactivating archived tasks
--data persistence, web version 
+* specifying visualization and reporting to meet the user needs
+
+* handling multiple projects ("clients"), each with multiple tasks
+
+* offering UI to visualize and report past tasks / over different time periods 
+
+* user interfaces / use cases for reactivating archived tasks
+
+* data persistence, web version 
