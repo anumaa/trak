@@ -186,18 +186,20 @@ class Trak(Frame):
 
 	"""
 	def start(self):
-		self.project.startTask(self.taskList.get())
-		self.stopButton.config(relief=RAISED, background='white')
-		self.startButton.config(relief=SUNKEN, background='lightgrey')
+		if len(self.project.tasks) > 0: 
+			self.project.startTask(self.taskList.get())
+			self.stopButton.config(relief=RAISED, background='white')
+			self.startButton.config(relief=SUNKEN, background='lightgrey')
 
 
 	"""Stops the currently ongoing session of the ongoing task
 
 	"""
 	def stop(self):
-		self.project.stopTask()
-		self.stopButton.config(relief=SUNKEN, background='lightgrey')
-		self.startButton.config(relief=RAISED, background='white')
+		if len(self.project.tasks) > 0: 
+			self.project.stopTask()
+			self.stopButton.config(relief=SUNKEN, background='lightgrey')
+			self.startButton.config(relief=RAISED, background='white')
 
 
 	"""Exporting the summary per task for the ongoing week (currently)
