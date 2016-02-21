@@ -10,7 +10,7 @@ Tasks are added by writing one task per line onto a text box. Deleting a task fr
 
 The app is set to stay on top of all other windows, and is small enough to fit to a corner of a screen, for easy access to switch tasks whenever necessary. The currently active task is selected from a dropdown menu, and can be paused during breaks - no time is counted during the pause. When a new task is chosen from the menu, it becomes active and its time is being counted (and the previously active task time is no longer counted). 
 
-Reporting currently includes a visual overview (and cumulative time) per task for the ongoing week. The same information can also be exported in CSV format for easy importing to spreadsheet programs. (reporting is rudimentary at this stage, it will be improved according to the user wishes and needs during the upcoming weeks) 
+Reporting currently includes a visual overview (and cumulative time) per task for the ongoing week. The same information can also be exported in CSV format for easy importing to spreadsheet programs. (reporting is rudimentary at this stage, it will be improved according to the user wishes and needs during the upcoming weeks. Resolution is currently set to seconds for testing purposes.) 
 
 Data persistence is currently handlded with Python's pickle serialization, but local database or cloud storage might be better for data consistency. Developing a corresponding web application is another possible future endeavour. 
 
