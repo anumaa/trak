@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from task import *
 from datetime import date, timedelta
+import dateutil
 
 """Project contains the current set of tasks (both active and archived)
 
@@ -218,6 +219,14 @@ class Project:
 				#print ("\tSESSION " + str(i) + ": " + str(s.getTotalTime()))
 				line = "\tSESSION " + str(i) + ": " + str(s.getTotalTime())
 				i = i + 1
+
+
+	def exportMonth(self, separator):
+		today = datetime.datetime.today().date()
+
+
+
+
 
 
 	def __str__(self):

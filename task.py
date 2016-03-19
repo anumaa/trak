@@ -54,7 +54,7 @@ class Task:
 	def endSession(self): 
 		#latestSession = self.sessions[len(self.sessions)-1]
 		latestSession = self.sessions[-1:]
-		if latestSession != None:
+		if len(latestSession) > 0:
 
 			# only modify the end time of the latest session if the session is still ongoing
 			# (it may have been stopped via the pause button or task switching)
