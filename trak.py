@@ -6,6 +6,7 @@ import pickle
 import atexit
 import os.path
 from datetime import date, timedelta
+import time
 
 from project import * 
 #from task import * 
@@ -23,6 +24,10 @@ class Trak(Frame):
 		self.previousTask = -1
 		self.editListVisible = FALSE
 		self.visuVisible = FALSE
+		self.timerVisible = FALSE
+		self.timerStart = 0
+		self.sec = 25*60
+		self.tickStarted = FALSE
 
 
 	"""Constructor. Initalizes the main widgets 
@@ -61,6 +66,14 @@ class Trak(Frame):
 		self.outputImg = PhotoImage(file='images/list.png')
 		self.outputButton = Button(self, justify = LEFT, command=self.visualize, image=self.outputImg, background='white')
 		self.outputButton.grid(row=0,column=4)
+
+		# image from http://www.free-icons-download.net/icons/tomato-icon-61223.html
+		#self.pomodoroImg = PhotoImage(file='images/pomodoro.png')
+		#self.pomodoroButton = Button(self, justify = LEFT, command=self.pomodoro, image=self.pomodoroImg, background='white')
+		#self.pomodoroButton.grid(row=0,column=5)
+
+		#self.timer = Label(self, text='25:00')
+
 
 
 	"""Editing the list of active tasks
@@ -135,6 +148,14 @@ class Trak(Frame):
 
 		if not self.visuVisible:
 
+
+			#DEBUG
+			#for t in self.project.getActiveTasks():
+			#	print(t.__str__(self))
+			#	for s in t.sessions:
+			#		print(s.__str__())
+
+
 			self.visuVisible = TRUE
 			self.vis = Canvas(self, width=maxWidth-2, height=maxHeight, background='white')
 			self.vis.grid(row=3,column=0,columnspan=5)
@@ -175,6 +196,39 @@ class Trak(Frame):
 			self.outputButton.config(relief=RAISED, background='white')
 		
 
+	"""Starts a pomodoro timer
+
+	"""
+	def pomodoro(self):
+		if self.timerVisible == FALSE:
+			self.timer.grid(row=0, column=6)
+			self.timerVisible = TRUE
+			self.sec = 25*60
+			if self.tickStarted == FALSE:
+				self.tick()
+				self.tickStarted = TRUE
+		else:
+			self.timerVisible =  FALSE
+			self.sec = 0
+			self.timer.grid_remove()
+
+
+
+	def tick(self):
+
+		self.sec -= 1
+		#time['text'] = self.sec
+		m, s = divmod(self.sec, 60)
+		if m == 0:
+			self.timer.config(text = str(s))
+		else:
+			self.timer.config(text = str(m) + ":" + str(s))
+		#print(str(self.sec))
+		# Take advantage of the after method of the Label
+		self.after(1000, self.tick)
+
+
+
 	"""Needed detour by the project list combobox
 
 	"""
@@ -186,7 +240,9 @@ class Trak(Frame):
 
 	"""
 	def start(self):
-		if len(self.project.tasks) > 0: 
+
+		if len(self.project.tasks) > 0:
+			#self.stop()
 			self.project.startTask(self.taskList.get())
 			self.stopButton.config(relief=RAISED, background='white')
 			self.startButton.config(relief=SUNKEN, background='lightgrey')

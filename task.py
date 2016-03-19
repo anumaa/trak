@@ -27,8 +27,7 @@ class Task:
 	def __str__(self, reduced): 
 		r = 'TASK ' + self.name + ' ' + str(self.totalTime) + " " 
 		return r
-		
-				
+
 		
 	def strLatestSession(self): 
 		r = ''
@@ -53,14 +52,18 @@ class Task:
 	
 	"""
 	def endSession(self): 
-		latestSession = self.sessions[len(self.sessions)-1]
-		latestSession.endSession()
-		
-		#st = latestSession.startTime
-		#en = latestSession.endTime
-		tot = latestSession.getTotalTime() 
+		#latestSession = self.sessions[len(self.sessions)-1]
+		latestSession = self.sessions[-1:]
+		if latestSession != None:
 
-		self.totalTime = self.totalTime + latestSession.getTotalTime()
+			# only modify the end time of the latest session if the session is still ongoing
+			# (it may have been stopped via the pause button or task switching)
+			if latestSession[0].endTime == 0:
+				latestSession[0].endSession()
+
+			tot = latestSession[0].getTotalTime()
+
+			self.totalTime = self.totalTime + latestSession[0].getTotalTime()
 
 
 	"""Returns true if the task status is set to 'active'
@@ -92,9 +95,14 @@ class Task:
 	
 	"""
 	def getTotalTime(self):
-		return self.totalTime
+		#return self.totalTime
 
-		
+		ttime = 0
+		for s in self.sessions:
+			ttime = ttime + s.getTotalTime()
+
+		return ttime
+
 
 """Single unbroken session of working time 
 
@@ -109,8 +117,9 @@ class Session:
 		self.startTime = int(time.time())
 		self.endTime = 0
 		
-	def __print__(self): 
-		return str(self.startTime)
+	def __str__(self):
+		r = str(self.startTime) + " - " + str(self.endTime)  + " = " + str(self.endTime - self.startTime)
+		return r
 		
 	"""Ends the current session 
 	
@@ -118,7 +127,9 @@ class Session:
 	def endSession(self): 
 		self.endTime = int(time.time())
 		self.totalTime = self.endTime-self.startTime
+		#print("session.endSession: start-end total " + str(self.startTime) + "-" + str(self.endTime) + " " + str(self.totalTime))
 		
 	def getTotalTime(self):
 		return self.totalTime
+
 

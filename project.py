@@ -36,7 +36,7 @@ class Project:
 		for existingTask in self.tasks:
 			if existingTask.isActive() and existingTask.name not in newTasks:
 				existingTask.archive()
-				print('archived: ' + existingTask.name)
+				#print('archived: ' + existingTask.name)
 
 
 	"""Returns a list of active tasks
@@ -144,22 +144,35 @@ class Project:
 
 	"""
 	def startTask(self, taskName):
-		if(self.previousTask != None):
-			self.stopTask()
 
-		task = self.getTaskByName(taskName)
-		taskTime = str(task.getTotalTime())
+		#find the task from the task list
+		newTask = self.getTaskByName(taskName)
+		#check it's not null
 
-		task.startSession()
-		self.previousTask = task
+		#no previous task
+		if self.previousTask == None or self.previousTask == newTask:
+
+			#start a new session, end the latest one first
+			newTask.endSession()
+			newTask.startSession()
+
+		#otherwise need to manage ending of the different previous task
+		else:
+			self.previousTask.endSession()
+			newTask.startSession()
+
+		self.previousTask = newTask
+
 
 
 	"""Stops the current session of the currently active task 
 
 	"""
 	def stopTask(self):
-		self.previousTask.endSession()
-		#print ('STOP  ' + str(self.previousTask.strLatestSession()))
+
+		#explicit pause
+		if self.previousTask != None:
+			self.previousTask.endSession()
 
 
 	"""Cumulative time per task over the current week (starting Monday midnight) 
